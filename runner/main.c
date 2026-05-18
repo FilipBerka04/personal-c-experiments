@@ -41,8 +41,7 @@ void kill_child(){
     child_pid = 0;
 }
 
-int main(int argc, char *argv[])
-{
+int main(int argc, char *argv[]){
     // handle ctrl-c
     struct sigaction action;
     memset(&action, 0, sizeof(action));
@@ -54,8 +53,9 @@ int main(int argc, char *argv[])
     // main loop
     while(1){
 	printf("&");
-	scanf("%s", buff);
-	run(buff);
+	fgets(buff, 64, stdin);
+	if(*buff != '\n')
+	    run(buff);
     } 
     return 0;
 }
