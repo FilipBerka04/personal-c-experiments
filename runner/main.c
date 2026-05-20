@@ -15,7 +15,7 @@ void run(const char* app){
     char path[64] = { PATH };
     strcat(path, app);
     child_pid = fork();
-    int status;
+    int status = 0;
     if(child_pid < 0){
 	printf("Error! Coulnd't create a process!\n");
 	exit(1);
