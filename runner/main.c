@@ -15,6 +15,7 @@ void run(const char* app){
     char path[64] = { PATH };
     strcat(path, app);
     child_pid = fork();
+    int status;
     if(child_pid < 0){
 	printf("Error! Coulnd't create a process!\n");
 	exit(1);
@@ -22,13 +23,15 @@ void run(const char* app){
 	char* args[] = {NULL};
 	printf("=======================\n");
 	execve(path, args, NULL);
-	printf("ERRORORRORR!!!!!!\n");
-	exit(-1);
+	// Exec failed
+	exit(127);
     }else{
-	int status;
 	waitpid(child_pid, &status, WUNTRACED);
 	printf("=======================\n");
-	printf("The program finished running with return code: %d\n", WEXITSTATUS(status));
+	if(WEXITSTATUS(status) == 127)
+	    printf("Error executing %s, command not found!\n", path);
+	else
+	    printf("The program finished running with return code: %d\n", WEXITSTATUS(status));
 	child_pid = 0;
     }
 }
@@ -54,8 +57,10 @@ int main(int argc, char *argv[]){
     while(1){
 	printf("&");
 	fgets(buff, 64, stdin);
-	if(*buff != '\n')
+	if(*buff != '\n'){
+	    buff[strcspn(buff, "\n")] = 0;
 	    run(buff);
+	}
     } 
     return 0;
 }
