@@ -15,7 +15,7 @@ void run(const char* app){
     char path[64] = { PATH };
     strcat(path, app);
     child_pid = fork();
-    int status = 0;
+    int status;
     if(child_pid < 0){
 	printf("Error! Coulnd't create a process!\n");
 	exit(1);
@@ -27,12 +27,20 @@ void run(const char* app){
 	exit(127);
     }else{
 	waitpid(child_pid, &status, WUNTRACED);
+	int code;
 	printf("=======================\n");
+	//command usage error
 	if(WEXITSTATUS(status) == 127)
 	    printf("Error executing %s, command not found!\n", path);
-	else
-	    printf("The program finished running with return code: %d\n", WEXITSTATUS(status));
+	//exited normally
+	if(WIFEXITED(status))
+	    code = WEXITSTATUS(status);
+	//killed by a signal
+	else if(WIFSIGNALED(status))
+	    code = WTERMSIG(status) + 128;
+	printf("The program finished running with return code: %d\n", code);
 	child_pid = 0;
+	
     }
 }
 
@@ -41,7 +49,7 @@ void kill_child(){
 	printf("\nClosing runnner shell...\n");
 	exit(0);
     }
-    child_pid = 0;
+    //kill(child_pid, SIGINT);
 }
 
 int main(int argc, char *argv[]){
@@ -49,6 +57,7 @@ int main(int argc, char *argv[]){
     struct sigaction action;
     memset(&action, 0, sizeof(action));
     action.sa_handler = kill_child;
+    action.sa_flags = SA_RESTART;
     sigaction(SIGINT, &action, NULL);
 
     char buff[64];

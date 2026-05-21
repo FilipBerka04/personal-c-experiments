@@ -1,1 +1,0 @@
-After entering a non existant command, every next command is going to throw "command not found" error
