@@ -12,17 +12,29 @@
 int child_pid = 0;
 
 void run(const char* app){
-    char path[64] = { PATH };
+    char path[64] = PATH;
+    char* child_argv[32] = { NULL };
     strcat(path, app);
+    //TODO
+    int i = 0;
+    int count = 0;
+    do{
+	child_argv[count++] = &(path[i++]);
+	//skip the rest of the word
+	while(path[i] >= 33 && path[i] <=126)i++;
+	if(path[i] == ' ') path[i++] = 0;
+	//skip the rest of spaces
+	while(path[i]==' ')i++;
+    }while(path[i] != '\0');
+
     child_pid = fork();
     int status;
     if(child_pid < 0){
-	printf("Error! Coulnd't create a process!\n");
+	// printf("Error! Coulnd't create a process!\n");
 	exit(1);
     }else if(child_pid == 0){
-	char* args[] = {NULL};
 	printf("=======================\n");
-	execve(path, args, NULL);
+	execve(child_argv[0], child_argv, NULL);
 	// Exec failed
 	exit(127);
     }else{
@@ -49,7 +61,6 @@ void kill_child(){
 	printf("\nClosing runnner shell...\n");
 	exit(0);
     }
-    //kill(child_pid, SIGINT);
 }
 
 int main(int argc, char *argv[]){
@@ -57,6 +68,8 @@ int main(int argc, char *argv[]){
     struct sigaction action;
     memset(&action, 0, sizeof(action));
     action.sa_handler = kill_child;
+    // line bolow makes it so after the action exetutes, all previous system calls shall be restarted
+    // required, since wait() inside of run() needs to capture the zombie child will get interrupted by the signal
     action.sa_flags = SA_RESTART;
     sigaction(SIGINT, &action, NULL);
 
