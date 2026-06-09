@@ -45,7 +45,7 @@ int main(int argc, char* argv[])
             lstat(dp->d_name, &child_st);
             if (!diff && dp->d_ino == ino) {
 		found = 1;
-                printf("Moved out of %s, %lu\n", dp->d_name, dp->d_ino);
+                //printf("Moved out of %s, %lu\n", dp->d_name, dp->d_ino);
                 strcpy(buff, "/");
                 strcat(buff, dp->d_name);
                 strcat(buff, path);
@@ -53,7 +53,7 @@ int main(int argc, char* argv[])
                 break;
             } else if (diff && current_st.st_ino == child_st.st_ino) {
 		found = 1;
-                printf("Moved out of %s, %lu\n", dp->d_name, dp->d_ino);
+                //printf("Moved out of %s, %lu\n", dp->d_name, dp->d_ino);
                 strcpy(buff, "/");
                 strcat(buff, dp->d_name);
                 strcat(buff, path);
