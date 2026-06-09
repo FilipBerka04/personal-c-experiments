@@ -32,37 +32,25 @@
 sig_atomic_t keepRunning = 1;
 
 
-int get_type(const char *path, int *val) {
+void get_type(const char *path, int *val) {
     FILE *f = fopen(path, "r");
-    if (!f) return -1;
     int res = fscanf(f, "%d", val);
     fclose(f);
-    return (res == 1) ? 0 : -1;
 }
 
-int get_pkg(const char *path, uint64_t *val) {
+void get_pkg(const char *path, uint64_t *val) {
     FILE *f = fopen(path, "r");
-    if (!f) return -1;
     char buf[64];
-    if (!fgets(buf, sizeof(buf), f)) {
-        fclose(f);
-        return -1;
-    }
+    fgets(buf, sizeof(buf), f);
     fclose(f);
     char *ptr = strchr(buf, '=');
-    if (ptr) {
-        *val = strtoull(ptr + 1, NULL, 16);
-        return 0;
-    }
-    return -1;
+    *val = strtoull(ptr + 1, NULL, 16);
 }
 
-int get_scale(const char *path, double *val) {
+void get_scale(const char *path, double *val) {
     FILE *f = fopen(path, "r");
-    if (!f) return -1;
     int res = fscanf(f, "%lf", val);
     fclose(f);
-    return (res == 1) ? 0 : -1;
 }
 
 void end(){
@@ -107,20 +95,18 @@ int main() {
     // main loop
     sleep(1);
     while (keepRunning) {
-        if (read(fd, &val, sizeof(uint64_t)) == sizeof(uint64_t)) {
-            double de = (val - prevVal) * scale;
-            printf("Power consumption: %.2f W\n", de);
-            prevVal = val;
-        }
+        read(fd, &val, sizeof(uint64_t));
+        double de = (val - prevVal) * scale;
+        printf("Power consumption: %.2f W\n", de);
+        prevVal = val;
         sleep(1); 
     }
 
     // after SIGINT
     ioctl(fd, PERF_EVENT_IOC_DISABLE, 0);
-    if (read(fd, &val, sizeof(uint64_t)) == sizeof(uint64_t)) {
-        double total = (val - startVal) * scale;
-        printf("\nTotal power used: %.2f J\n", total);
-    }
+    read(fd, &val, sizeof(uint64_t));
+    double total = (val - startVal) * scale;
+    printf("\nTotal power used: %.2f J\n", total);
 
     close(fd);
     return 0;
